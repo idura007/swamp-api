@@ -1,12 +1,15 @@
+// import { u } from '../../../../Library/Caches/typescript/2.6/node_modules/@types/tar';
+
 const express = require('express')
     , app = express()
     , Disaster = require('../models/disaster')
+    , Log = require('../models/log')
 
 // fetching dummy info from JSON file 
 const data = require('../data/data');
 
 app.get('/', (req, res) => {
-    res.json('index');
+    res.json("Index");
 })
 
 // Return monitery brakdown of donation
@@ -45,10 +48,14 @@ app.post('/:_name', (req, res) => {
             Disaster.updateDisaster(id, amountRaised, {}, (err) => {
                 if (err) { console.log(err); }
                 else {
-                    Disaster.Log(log, (err) => {
-                        if (err) {
-                            console.log(err)
-                        }
+                    let log = {
+                        name: i.name,
+                        amountDonated: donation,
+                        monetaryBreakdown: monetaryBreakdown
+                    }
+                    Log.addLog(log, (err) => {
+                        if (err) { console.log(err); }
+                        else { res.json('Success') }
                     });
                     res.json({
                         "breakdown": {

@@ -13,12 +13,6 @@ let disasterSchema = mongoose.Schema({
     donationBreakdown: donationBreakdown
 });
 
-let logSchema = mongoose.Schema({
-    name: String,
-    amountDonated: Number,
-    donationBreakdown: donationBreakdown
-})
-
 let Disaster = module.exports = mongoose.model('Disaster', disasterSchema);
 
 module.exports.addDisaster = ((disaster, callback) => {
