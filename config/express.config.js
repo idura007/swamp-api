@@ -30,6 +30,8 @@ res.status(500).send(JSON.stringify({ err: 'Bad API Request!' }))
 
 // Route Configuration
 const index = require('../routes/index');
+const disaster = require('../routes/disaster');
 
 app.use('/', index);
+app.use('/disasters', disaster);
 };
