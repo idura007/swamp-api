@@ -5,18 +5,9 @@ const express = require('express')
 // fetching dummy info from JSON file 
 const data = require('../data/data');
 
-// ES5
-app.get('/:_id', function (amount, req, res) {
-    // do something..
-    console.log('es5')
-});
-
-// ES6
 // Return monitery brakdown of donation
-app.get('/', (req, res) => {
-    let donation = 50;
-    let name = "Hurricane Irma";
-
+app.get('/', (donation, name, req, res) => {
+    if(donation == null || name == null) { res.json("ni pinga"); }
     Disaster.getDisasterByName(name, (err, disaster) => {
         if (err) { throw err }
         disaster.map((i) => {
