@@ -5,17 +5,35 @@ const express = require('express')
 // fetching dummy info from JSON file 
 const data = require('../data/data');
 
+app.get('/', (req, res) => {
+    res.json('index');
+})
+
 // Return monitery brakdown of donation
-app.get('/', (donation, name, req, res) => {
-    if(donation == null || name == null) { res.json("ni pinga"); }
+app.get('/:_name', (req, res) => {
+    let name = req.params._name;
+    let donate = req.body.donate;
+
+    Disaster.getDisasterByName(name, (err, disaster) => {
+        if (err) { throw err; }
+        res.json(disaster);
+    });
+});
+
+app.post('/:_name', (req, res) => {
+    let name = req.params._name;
+    let donation = req.body.donation;
+
     Disaster.getDisasterByName(name, (err, disaster) => {
         if (err) { throw err }
         disaster.map((i) => {
-            let food = "$" + donation * i.donationBreakdown.food / 100;
-            let water = "$" + donation * i.donationBreakdown.water / 100;
-            let toiletries = "$" + donation * i.donationBreakdown.toiletries / 100;
-            let cannedGoods = "$" + donation * i.donationBreakdown.cannedGoods / 100;
+            let amountRaised = i.amountRaised + donation;
+            let id = i.id;
 
+            let food = donation * i.donationBreakdown.food / 100;
+            let water = donation * i.donationBreakdown.water / 100;
+            let toiletries = donation * i.donationBreakdown.toiletries / 100;
+            let cannedGoods = donation * i.donationBreakdown.cannedGoods / 100;
 
             let monetaryBreakdown = {
                 food: food,
@@ -23,9 +41,64 @@ app.get('/', (donation, name, req, res) => {
                 toiletries: toiletries,
                 cannedGoods: cannedGoods
             }
-            res.json(monetaryBreakdown);
+
+            Disaster.updateDisaster(id, amountRaised, {}, (err) => {
+                if (err) { console.log(err); }
+                else {
+                    Disaster.Log(log, (err) => {
+                        if (err) {
+                            console.log(err)
+                        }
+                    });
+                    res.json({
+                        "breakdown": {
+                            disasterBreakDown: {
+                                name: i.name,
+                                amountRaised: amountRaised,
+                                monetaryBreakdown: {
+                                    food: food,
+                                    water: water,
+                                    toiletries: toiletries,
+                                    cannedGoods: cannedGoods
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         });
     });
 });
 
+
+app.get('/test/:_name', (req, res) => {
+    let name = req.params._name;
+    let donation = 20;
+
+    Disaster.getDisasterByName(name, (err, disaster) => {
+        if (err) { throw err }
+        disaster.map((i) => {
+            let amountRaised = i.amountRaised + donation;
+
+            let food = "$" + donation * i.donationBreakdown.food / 100;
+            let water = "$" + donation * i.donationBreakdown.water / 100;
+            let toiletries = "$" + donation * i.donationBreakdown.toiletries / 100;
+            let cannedGoods = "$" + donation * i.donationBreakdown.cannedGoods / 100;
+
+            let monetaryBreakdown = {
+                food: food,
+                water: water,
+                toiletries: toiletries,
+                cannedGoods: cannedGoods
+            }
+
+            let disaster = {
+                name: i.name,
+                amountRaised: amountRaised,
+                monetaryBreakdown: monetaryBreakdown
+            }
+            res.json(disaster);
+        });
+    });
+})
 module.exports = app;

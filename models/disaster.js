@@ -13,6 +13,12 @@ let disasterSchema = mongoose.Schema({
     donationBreakdown: donationBreakdown
 });
 
+let logSchema = mongoose.Schema({
+    name: String,
+    amountDonated: Number,
+    donationBreakdown: donationBreakdown
+})
+
 let Disaster = module.exports = mongoose.model('Disaster', disasterSchema);
 
 module.exports.addDisaster = ((disaster, callback) => {
@@ -34,4 +40,12 @@ module.exports.getDisasterByName = (name, callback) => {
 module.exports.removeDisaster = (id, callback) => {
     let query = { _id: id };
     Disaster.remove(query, callback);
+}
+
+module.exports.updateDisaster = (id, amountRaised, options, callback) => {
+    var query = { _id: id };
+    var update = {
+        amountRaised: amountRaised
+    }
+    Disaster.findOneAndUpdate(query, update, options, callback);
 }
