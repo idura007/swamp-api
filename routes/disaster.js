@@ -44,6 +44,7 @@ app.post('/', (req, res) => {
     data.map((i) => {
         let id = i.id
             , name = i.name
+            , img = i.img
             , amountRaised = i.amountRaised
             , food = i.donationBreakdown.food
             , water = i.donationBreakdown.water
@@ -52,6 +53,7 @@ app.post('/', (req, res) => {
 
         disasterArray.push({
             id: id,
+            img: img,
             name: name,
             amountRaised: amountRaised,
             donationBreakdown: {
@@ -67,7 +69,6 @@ app.post('/', (req, res) => {
         if (err) { console.log(err); }
         else { res.json('Success') }
     });
-    console.log("Success");
 });
 
 module.exports = app;

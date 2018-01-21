@@ -1,5 +1,3 @@
-// import { u } from '../../../../Library/Caches/typescript/2.6/node_modules/@types/tar';
-
 const express = require('express')
     , app = express()
     , Disaster = require('../models/disaster')
@@ -8,104 +6,58 @@ const express = require('express')
 // fetching dummy info from JSON file 
 const data = require('../data/data');
 
-app.get('/', (req, res) => {
-    res.json("Index");
-})
+// Return all Logged donations
+app.get('/all', (req, res) => {
+    Log.getLogs((err, log) => {
+        res.json(log)
+    });
+});
 
-// Return monitery brakdown of donation
+// Return monitery breakdown of donation
 app.get('/:_name', (req, res) => {
     let name = req.params._name;
     let donate = req.body.donate;
 
     Disaster.getDisasterByName(name, (err, disaster) => {
-        if (err) { throw err; }
+        if (err) { console.log(err); }
         res.json(disaster);
     });
 });
 
+// Log when a donation is made to a disaster
 app.post('/:_name', (req, res) => {
     let name = req.params._name;
     let donation = req.body.donation;
+    if (donation == '' || donation == null) {
+        res.json('Please enter a donation amount!');
+    } else {
+        Disaster.getDisasterByName(name, (err, disaster) => {
+            if (err) { console.log(err); }
+            else {
+                let food = donation * disaster[0].donationBreakdown.food / 100
+                    , water = donation * disaster[0].donationBreakdown.water / 100
+                    , toiletries = donation * disaster[0].donationBreakdown.toiletries / 100
+                    , cannedGoods = donation * disaster[0].donationBreakdown.cannedGoods / 100
 
-    Disaster.getDisasterByName(name, (err, disaster) => {
-        if (err) { throw err }
-        disaster.map((i) => {
-            let amountRaised = i.amountRaised + donation;
-            let id = i.id;
-
-            let food = donation * i.donationBreakdown.food / 100;
-            let water = donation * i.donationBreakdown.water / 100;
-            let toiletries = donation * i.donationBreakdown.toiletries / 100;
-            let cannedGoods = donation * i.donationBreakdown.cannedGoods / 100;
-
-            let monetaryBreakdown = {
-                food: food,
-                water: water,
-                toiletries: toiletries,
-                cannedGoods: cannedGoods
-            }
-
-            Disaster.updateDisaster(id, amountRaised, {}, (err) => {
-                if (err) { console.log(err); }
-                else {
-                    let log = {
-                        name: i.name,
-                        amountDonated: donation,
-                        monetaryBreakdown: monetaryBreakdown
+                let log = [{
+                    name: disaster[0].name,
+                    id: disaster[0]._id,
+                    amountDonated: donation,
+                    donationBreakdown: {
+                        food: food,
+                        water: water,
+                        toiletries: toiletries,
+                        cannedGoods: cannedGoods,
                     }
-                    Log.addLog(log, (err) => {
-                        if (err) { console.log(err); }
-                        else { res.json('Success') }
-                    });
-                    res.json({
-                        "breakdown": {
-                            disasterBreakDown: {
-                                name: i.name,
-                                amountRaised: amountRaised,
-                                monetaryBreakdown: {
-                                    food: food,
-                                    water: water,
-                                    toiletries: toiletries,
-                                    cannedGoods: cannedGoods
-                                }
-                            }
-                        }
-                    });
-                }
-            });
+                }]
+
+                Log.addLog(log, (err, log) => {
+                    if (err) { console.log(err); }
+                    else { res.json(log); }
+                })
+            }
         });
-    });
+    }
 });
 
-
-app.get('/test/:_name', (req, res) => {
-    let name = req.params._name;
-    let donation = 20;
-
-    Disaster.getDisasterByName(name, (err, disaster) => {
-        if (err) { throw err }
-        disaster.map((i) => {
-            let amountRaised = i.amountRaised + donation;
-
-            let food = "$" + donation * i.donationBreakdown.food / 100;
-            let water = "$" + donation * i.donationBreakdown.water / 100;
-            let toiletries = "$" + donation * i.donationBreakdown.toiletries / 100;
-            let cannedGoods = "$" + donation * i.donationBreakdown.cannedGoods / 100;
-
-            let monetaryBreakdown = {
-                food: food,
-                water: water,
-                toiletries: toiletries,
-                cannedGoods: cannedGoods
-            }
-
-            let disaster = {
-                name: i.name,
-                amountRaised: amountRaised,
-                monetaryBreakdown: monetaryBreakdown
-            }
-            res.json(disaster);
-        });
-    });
-})
 module.exports = app;

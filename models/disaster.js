@@ -10,6 +10,7 @@ let donationBreakdown = new mongoose.Schema({
 let disasterSchema = mongoose.Schema({
     name: String,
     amountRaised: Number,
+    img: String,
     donationBreakdown: donationBreakdown
 });
 
